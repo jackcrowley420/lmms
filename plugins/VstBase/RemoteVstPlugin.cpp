@@ -171,9 +171,9 @@ class RemoteVstPlugin : public RemotePluginClient
 {
 public:
 #ifdef SYNC_WITH_SHM_FIFO
-	RemoteVstPlugin(const std::string& _shm_in, const std::string& _shm_out, bool skipInit = false);
+	RemoteVstPlugin( const std::string& _shm_in, const std::string& _shm_out );
 #else
-	RemoteVstPlugin(const char* socketPath, bool skipInit = false);
+	RemoteVstPlugin( const char * socketPath );
 #endif
 	virtual ~RemoteVstPlugin();
 
@@ -491,17 +491,16 @@ private:
 	};
 
 	Sync m_sync;
-	bool m_skipInit;
 };
 
 
 
 
 #ifdef SYNC_WITH_SHM_FIFO
-RemoteVstPlugin::RemoteVstPlugin(const std::string& _shm_in, const std::string& _shm_out, bool skipInit) :
+RemoteVstPlugin::RemoteVstPlugin( const std::string& _shm_in, const std::string& _shm_out ) :
 	RemotePluginClient( _shm_in, _shm_out ),
 #else
-RemoteVstPlugin::RemoteVstPlugin(const char * socketPath, bool skipInit) :
+RemoteVstPlugin::RemoteVstPlugin( const char * socketPath ) :
 	RemotePluginClient( socketPath ),
 #endif
 	m_libInst( nullptr ),
@@ -520,8 +519,7 @@ RemoteVstPlugin::RemoteVstPlugin(const char * socketPath, bool skipInit) :
 	m_midiEvents(),
 	m_bpm( 0 ),
 	m_currentSamplePos( 0 ),
-	m_currentProgram(-1),
-	m_skipInit{skipInit}
+	m_currentProgram(-1)
 {
 	__plugin = this;
 
@@ -751,25 +749,26 @@ void RemoteVstPlugin::init( const std::string & _plugin_file )
 
 	setResumed( true );
 
-	if (!m_skipInit) {
-		debugMessage( "creating editor\n" );
-		initEditor();
-		debugMessage( "editor successfully created\n" );
-	}
+	debugMessage( "creating editor\n" );
+	initEditor();
+	debugMessage( "editor successfully created\n" );
 
 
 	// now post some information about our plugin
-	sendMessage(message(IdVstPluginWindowID).addInt(m_windowID));
+	sendMessage( message( IdVstPluginWindowID ).addInt( m_windowID ) );
 
-	sendMessage(message(IdVstPluginEditorGeometry).addInt(m_windowWidth).addInt(m_windowHeight));
-	sendMessage(message(IdVstPluginName).addString(pluginName()));
-	debugMessage(std::string("plugin name: ") + pluginName() + "\n");
-	sendMessage(message(IdVstPluginVersion).addInt(pluginVersion()));
-	sendMessage(message(IdVstPluginVendorString).addString(pluginVendorString()));
-	sendMessage(message(IdVstPluginProductString).addString(pluginProductString()));
-	sendMessage(message(IdVstParameterCount).addInt(m_plugin->numParams));
-
-	if (m_plugin->flags & effFlagsIsSynth) { sendMessage(message(IdVstIsSynth)); }
+	sendMessage( message( IdVstPluginEditorGeometry ).
+						addInt( m_windowWidth ).
+						addInt( m_windowHeight ) );
+	sendMessage( message( IdVstPluginName ).addString( pluginName() ) );
+	debugMessage( std::string("plugin name: ") + pluginName() + "\n" );
+	sendMessage( message( IdVstPluginVersion ).addInt( pluginVersion() ) );
+	sendMessage( message( IdVstPluginVendorString ).
+					addString( pluginVendorString() ) );
+	sendMessage( message( IdVstPluginProductString ).
+					addString( pluginProductString() ) );
+	sendMessage( message( IdVstParameterCount ).
+					addInt( m_plugin->numParams ) );
 
 	sendMessage( IdInitDone );
 
@@ -1035,7 +1034,7 @@ bool RemoteVstPlugin::load( const std::string & _plugin_file )
 
 	sendMessage( message( IdVstPluginUniqueID ).addString( id ) );
 
-	if (!m_skipInit){ pluginDispatch(effOpen); }
+	pluginDispatch( effOpen );
 
 	return true;
 }
@@ -2481,9 +2480,9 @@ int main( int _argc, char * * _argv )
 	using lmms::RemoteVstPlugin;
 
 #ifdef SYNC_WITH_SHM_FIFO
-	if( _argc < 5 )
-#else
 	if( _argc < 4 )
+#else
+	if( _argc < 3 )
 #endif
 	{
 		fprintf( stderr, "not enough arguments\n" );
@@ -2541,7 +2540,6 @@ int main( int _argc, char * * _argv )
 	}
 
 #endif
-	bool skipInit;
 	{
 	#ifdef SYNC_WITH_SHM_FIFO
 		int embedMethodIndex = 3;
@@ -2549,7 +2547,6 @@ int main( int _argc, char * * _argv )
 		int embedMethodIndex = 2;
 	#endif
 		std::string embedMethod = _argv[embedMethodIndex];
-		skipInit = _argv[embedMethodIndex+1][0] != '0';
 
 		if ( embedMethod == "none" )
 		{
@@ -2593,9 +2590,9 @@ int main( int _argc, char * * _argv )
 	// constructor automatically will process messages until it receives
 	// a IdVstLoadPlugin message and processes it
 #ifdef SYNC_WITH_SHM_FIFO
-	__plugin = new RemoteVstPlugin{_argv[1], _argv[2], skipInit};
+	__plugin = new RemoteVstPlugin( _argv[1], _argv[2] );
 #else
-	__plugin = new RemoteVstPlugin{_argv[1], skipInit};
+	__plugin = new RemoteVstPlugin( _argv[1] );
 #endif
 
 	if( __plugin->isInitialized() )

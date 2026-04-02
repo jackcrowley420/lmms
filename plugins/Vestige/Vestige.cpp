@@ -54,8 +54,6 @@
 #include "SubWindow.h"
 #include "TextFloat.h"
 #include "VstPlugin.h"
-#include "VstSubPluginFeatures.h"
-#include "VstList.h"
 
 namespace lmms
 {
@@ -83,9 +81,7 @@ Plugin::Descriptor Q_DECL_EXPORT  vestige_plugin_descriptor =
 		"so",
 #	endif
 #endif
-	VstList::inst()->plugins().empty()
-		? nullptr // makes Vestige appear as a plugin by itself
-		: new VstSubPluginFeatures(Plugin::Type::Instrument),
+	nullptr,
 } ;
 
 }
@@ -153,8 +149,8 @@ private:
 
 
 
-VestigeInstrument::VestigeInstrument(InstrumentTrack* instrumentTrack, Plugin::Descriptor::SubPluginFeatures::Key* key) :
-	Instrument(instrumentTrack, &vestige_plugin_descriptor, nullptr, Flag::IsSingleStreamed | Flag::IsMidiBased),
+VestigeInstrument::VestigeInstrument( InstrumentTrack * _instrument_track ) :
+	Instrument(_instrument_track, &vestige_plugin_descriptor, nullptr, Flag::IsSingleStreamed | Flag::IsMidiBased),
 	m_plugin( nullptr ),
 	m_pluginMutex(),
 	m_subWindow( nullptr ),
@@ -163,17 +159,12 @@ VestigeInstrument::VestigeInstrument(InstrumentTrack* instrumentTrack, Plugin::D
 	p_subWindow( nullptr )
 {
 	// now we need a play-handle which cares for calling play()
-	auto iph = new InstrumentPlayHandle(this, instrumentTrack);
+	auto iph = new InstrumentPlayHandle(this, _instrument_track);
 	Engine::audioEngine()->addPlayHandle( iph );
 
 	connect( ConfigManager::inst(), SIGNAL( valueChanged(QString,QString,QString) ),
 			 this, SLOT( handleConfigChange(QString, QString, QString) ),
 			 Qt::QueuedConnection );
-	if (auto& path = key->attributes["file"]; !path.isEmpty())
-	{
-		loadFile(path);
-		setDisplayName(key->displayName());
-	}
 }
 
 
@@ -1191,12 +1182,9 @@ extern "C"
 {
 
 // necessary for getting instance out of shared lib
-Q_DECL_EXPORT Plugin * lmms_plugin_main(Model* m, void* data)
+Q_DECL_EXPORT Plugin * lmms_plugin_main( Model *m, void * )
 {
-	return new VestigeInstrument{
-		static_cast<InstrumentTrack*>(m),
-		static_cast<Plugin::Descriptor::SubPluginFeatures::Key*>(data)
-	};
+	return new VestigeInstrument( static_cast<InstrumentTrack *>( m ) );
 }
 
 
