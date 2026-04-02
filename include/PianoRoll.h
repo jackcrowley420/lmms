@@ -56,7 +56,6 @@ namespace gui
 {
 
 class ComboBox;
-class PianoRollPainter;
 class PositionLine;
 class SimpleTextFloat;
 class TimeLineWidget;
@@ -501,14 +500,13 @@ private:
 	int m_strumCurrentVertical = 0;
 	float m_strumHeightRatio = 0.0f;
 	bool m_strumEnabled = false;
-		//! Handles updating all of the note positions when performing a strum
-		void updateStrumPos(QMouseEvent* me, bool initial, bool warp);
+	//! Handles updating all of the note positions when performing a strum
+	void updateStrumPos(QMouseEvent* me, bool initial, bool warp);
 
 
-		friend class PianoRollPainter;
-		friend class PianoRollWindow;
+	friend class PianoRollWindow;
 
-		StepRecorderWidget m_stepRecorderWidget;
+	StepRecorderWidget m_stepRecorderWidget;
 	StepRecorder m_stepRecorder;
 
 	// qproperty fields
