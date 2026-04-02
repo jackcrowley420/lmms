@@ -72,8 +72,6 @@ public slots:
 	void editControls();
 	void moveUp();
 	void moveDown();
-	void savePreset();
-	void loadPreset();
 	void deletePlugin();
 
 signals:

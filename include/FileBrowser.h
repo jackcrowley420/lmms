@@ -245,9 +245,7 @@ public:
 	enum class FileType
 	{
 		Project,
-		InstrumentPreset,
-		EffectPreset,
-		EffectChainPreset,
+		Preset,
 		Sample,
 		SoundFont,
 		Patch,
@@ -260,9 +258,7 @@ public:
 	{
 		NotSupported,
 		LoadAsProject,
-		LoadAsInstrumentPreset,
-		LoadAsEffectPreset,
-		LoadAsEffectChainPreset,
+		LoadAsPreset,
 		LoadByPlugin,
 		ImportAsProject
 	} ;
@@ -289,7 +285,7 @@ public:
 
 	inline bool isTrack() const
 	{
-		return m_handling == FileHandling::LoadAsInstrumentPreset || m_handling == FileHandling::LoadByPlugin;
+		return m_handling == FileHandling::LoadAsPreset || m_handling == FileHandling::LoadByPlugin;
 	}
 
 	QString extension();
